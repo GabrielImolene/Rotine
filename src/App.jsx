@@ -8,6 +8,7 @@ const navItems = [
   ["notes", "Notas", "notes"],
   ["study", "Estudos", "study"],
   ["routine", "Rotina", "routine"],
+  ["nutrition", "Alimentação", "nutrition"],
   ["workouts", "Treinos", "workouts"],
   ["alerts", "Alertas", "alerts"],
   ["account", "Conta", "account"],
@@ -94,6 +95,7 @@ const emptyData = (user) => ({
     smsAlerts: false,
     phone: "",
     mfaRequired: false,
+    dailyWaterGoal: 2000,
   },
   events: [],
   tasks: [],
@@ -104,6 +106,8 @@ const emptyData = (user) => ({
   studyTopics: [],
   attachments: [],
   habits: [],
+  meals: [],
+  hydration: [],
   workouts: [],
   workoutSessions: [],
 });
@@ -251,6 +255,20 @@ const fromWorkoutSession = (row) => ({
   workoutId: row.workout_id,
   completedAt: row.completed_at,
 });
+const fromMeal = (row) => ({
+  id: row.id,
+  title: row.title,
+  date: row.meal_date,
+  type: row.meal_type,
+  time: row.planned_time ? row.planned_time.slice(0, 5) : "",
+  notes: row.notes || "",
+  completedAt: row.completed_at || null,
+});
+const fromHydration = (row) => ({
+  id: row.id,
+  date: row.entry_date,
+  amountMl: Number(row.amount_ml || 0),
+});
 
 function usePlanner(user, isDemo) {
   const [data, setData] = useState(() => emptyData(user));
@@ -308,6 +326,12 @@ function usePlanner(user, isDemo) {
           .order("created_at"),
         supabase.from("study_attachments").select("*").order("created_at"),
         supabase.from("habits").select("*").order("created_at"),
+        supabase
+          .from("meal_entries")
+          .select("*")
+          .order("meal_date")
+          .order("planned_time"),
+        supabase.from("hydration_logs").select("*").order("entry_date"),
         supabase.from("workouts").select("*").order("created_at"),
         supabase
           .from("workout_sessions")
@@ -335,6 +359,8 @@ function usePlanner(user, isDemo) {
         studyTopics,
         attachments,
         habits,
+        meals,
+        hydration,
         workouts,
         workoutSessions,
       ] = queries.map((result) => result.data);
@@ -350,6 +376,7 @@ function usePlanner(user, isDemo) {
             smsAlerts: profile?.sms_notifications || false,
             phone: profile?.phone || "",
             mfaRequired: profile?.mfa_required || false,
+            dailyWaterGoal: Number(profile?.daily_water_goal_ml || 2000),
           },
           events: events.map(fromEvent),
           tasks: tasks.map(fromTask),
@@ -360,6 +387,8 @@ function usePlanner(user, isDemo) {
           studyTopics: studyTopics.map(fromStudyTopic),
           attachments: attachments.map(fromAttachment),
           habits: habits.map(fromHabit),
+          meals: meals.map(fromMeal),
+          hydration: hydration.map(fromHydration),
           workouts: workouts.map(fromWorkout),
           workoutSessions: workoutSessions.map(fromWorkoutSession),
         });
@@ -837,6 +866,83 @@ function usePlanner(user, isDemo) {
         "habits",
       );
     },
+    addMeal: (form) =>
+      insert(
+        "meal_entries",
+        {
+          title: form.title,
+          meal_date: form.date,
+          meal_type: form.type,
+          planned_time: form.time || null,
+          notes: form.notes || "",
+          completed_at: null,
+        },
+        fromMeal,
+        "meals",
+      ),
+    updateMeal: (id, form) =>
+      update(
+        "meal_entries",
+        id,
+        {
+          title: form.title,
+          meal_date: form.date,
+          meal_type: form.type,
+          planned_time: form.time || null,
+          notes: form.notes || "",
+        },
+        fromMeal,
+        "meals",
+      ),
+    toggleMeal: (meal) =>
+      update(
+        "meal_entries",
+        meal.id,
+        { completed_at: meal.completedAt ? null : new Date().toISOString() },
+        fromMeal,
+        "meals",
+      ),
+    setHydration: async (date, amountMl) => {
+      const normalized = Math.max(0, Math.min(20000, Number(amountMl) || 0));
+      if (isDemo) {
+        localMutation((state) => {
+          const existing = state.hydration.find((entry) => entry.date === date);
+          const entry = existing
+            ? { ...existing, amountMl: normalized }
+            : { id: newId(), date, amountMl: normalized };
+          return {
+            ...state,
+            hydration: existing
+              ? state.hydration.map((item) =>
+                  item.date === date ? entry : item,
+                )
+              : [...state.hydration, entry],
+          };
+        });
+        return;
+      }
+      return remote(async () => {
+        const { data: row, error: issue } = await supabase
+          .from("hydration_logs")
+          .upsert(
+            { user_id: user.id, entry_date: date, amount_ml: normalized },
+            { onConflict: "user_id,entry_date" },
+          )
+          .select()
+          .single();
+        if (issue) throw issue;
+        const mapped = fromHydration(row);
+        setData((state) => ({
+          ...state,
+          hydration: state.hydration.some((item) => item.date === date)
+            ? state.hydration.map((item) =>
+                item.date === date ? mapped : item,
+              )
+            : [...state.hydration, mapped],
+        }));
+        return mapped;
+      });
+    },
     addWorkout: (form) =>
       insert(
         "workouts",
@@ -966,6 +1072,7 @@ function usePlanner(user, isDemo) {
     },
     removeStudyTopic: (id) => remove("study_topics", id, "studyTopics"),
     removeHabit: (id) => remove("habits", id, "habits"),
+    removeMeal: (id) => remove("meal_entries", id, "meals"),
     removeWorkout: (id) => remove("workouts", id, "workouts"),
     saveProfile: async (form) => {
       const patch = {
@@ -973,6 +1080,7 @@ function usePlanner(user, isDemo) {
         email_notifications: form.emailAlerts,
         sms_notifications: form.smsAlerts,
         phone: form.phone || null,
+        daily_water_goal_ml: Number(form.dailyWaterGoal || 2000),
       };
       if (isDemo) {
         localMutation((state) => ({
@@ -1013,6 +1121,36 @@ function usePlanner(user, isDemo) {
           profile: { ...state.profile, mfaRequired: Boolean(row.mfa_required) },
         }));
         return true;
+      });
+    },
+    setDailyWaterGoal: async (amountMl) => {
+      const normalized = Math.max(
+        250,
+        Math.min(10000, Number(amountMl) || 2000),
+      );
+      if (isDemo) {
+        localMutation((state) => ({
+          ...state,
+          profile: { ...state.profile, dailyWaterGoal: normalized },
+        }));
+        return normalized;
+      }
+      return remote(async () => {
+        const { data: row, error: issue } = await supabase
+          .from("profiles")
+          .update({ daily_water_goal_ml: normalized })
+          .eq("id", user.id)
+          .select()
+          .single();
+        if (issue) throw issue;
+        setData((state) => ({
+          ...state,
+          profile: {
+            ...state.profile,
+            dailyWaterGoal: Number(row.daily_water_goal_ml || normalized),
+          },
+        }));
+        return normalized;
       });
     },
   };
@@ -2307,6 +2445,241 @@ function WorkoutPlanCard({ workout, planner, data, onEdit }) {
   );
 }
 
+const mealSlots = [
+  { name: "Café da manhã", time: "07:30", marker: "Manhã" },
+  { name: "Almoço", time: "12:30", marker: "Meio-dia" },
+  { name: "Lanche", time: "16:00", marker: "Tarde" },
+  { name: "Jantar", time: "20:00", marker: "Noite" },
+];
+
+function MealCard({ meal, planner, openModal }) {
+  return (
+    <article className={`meal-card ${meal.completedAt ? "done" : ""}`}>
+      <div className="meal-card-head">
+        <button
+          className="meal-check"
+          onClick={() => planner.toggleMeal(meal)}
+          type="button"
+          aria-label={
+            meal.completedAt ? "Marcar como pendente" : "Marcar como consumida"
+          }
+        >
+          {meal.completedAt ? "✓" : ""}
+        </button>
+        <span>{meal.time || "Sem horário"}</span>
+        <div className="item-actions">
+          <button
+            className="edit"
+            onClick={() => openModal({ type: "meal", initial: meal })}
+            type="button"
+          >
+            Editar
+          </button>
+          <button
+            className="delete"
+            onClick={() => planner.removeMeal(meal.id)}
+            type="button"
+            aria-label="Excluir refeição"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <strong>{meal.title}</strong>
+      {meal.notes && <p>{meal.notes}</p>}
+    </article>
+  );
+}
+
+function Nutrition({ data, openModal, planner }) {
+  const [selectedDate, setSelectedDate] = useState(today());
+  const [goal, setGoal] = useState(data.profile.dailyWaterGoal || 2000);
+  useEffect(() => {
+    setGoal(data.profile.dailyWaterGoal || 2000);
+  }, [data.profile.dailyWaterGoal]);
+  const meals = data.meals
+    .filter((meal) => meal.date === selectedDate)
+    .sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+  const completed = meals.filter((meal) => meal.completedAt).length;
+  const hydration =
+    data.hydration.find((entry) => entry.date === selectedDate)?.amountMl || 0;
+  const waterGoal = Math.max(250, Number(data.profile.dailyWaterGoal || 2000));
+  const hydrationProgress = Math.min(
+    100,
+    Math.round((hydration / waterGoal) * 100),
+  );
+  const formattedDate = capitalize(
+    new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(new Date(`${selectedDate}T12:00`)),
+  );
+  const moveDay = (amount) => {
+    const next = new Date(`${selectedDate}T12:00`);
+    next.setDate(next.getDate() + amount);
+    setSelectedDate(isoFor(next));
+  };
+  const saveGoal = () => {
+    const normalized = Math.max(250, Math.min(10000, Number(goal) || 2000));
+    setGoal(normalized);
+    planner.setDailyWaterGoal(normalized);
+  };
+
+  return (
+    <PageFrame
+      eyebrow="BEM-ESTAR"
+      title="Alimentação"
+      copy="Planeje as refeições do dia, registre o que comeu e acompanhe a sua hidratação."
+      action="Nova refeição"
+      onAction={() =>
+        openModal({ type: "meal", preset: { date: selectedDate } })
+      }
+    >
+      <section className="nutrition-overview">
+        <div className="nutrition-date-nav">
+          <button
+            type="button"
+            onClick={() => moveDay(-1)}
+            aria-label="Dia anterior"
+          >
+            ←
+          </button>
+          <div>
+            <span className="eyebrow">PLANO DO DIA</span>
+            <strong>{formattedDate}</strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => moveDay(1)}
+            aria-label="Próximo dia"
+          >
+            →
+          </button>
+        </div>
+        <button
+          className="nutrition-today"
+          type="button"
+          onClick={() => setSelectedDate(today())}
+        >
+          Hoje
+        </button>
+        <div className="nutrition-status">
+          <strong>
+            {completed}/{meals.length || 0}
+          </strong>
+          <span>Refeições concluídas</span>
+        </div>
+      </section>
+      <div className="nutrition-layout">
+        <section className="meal-board" aria-label="Refeições do dia">
+          {mealSlots.map((slot) => {
+            const entries = meals.filter((meal) => meal.type === slot.name);
+            return (
+              <article className="meal-lane" key={slot.name}>
+                <header>
+                  <span>{slot.marker}</span>
+                  <h2>{slot.name}</h2>
+                  <small>{slot.time}</small>
+                </header>
+                <div className="meal-lane-content">
+                  {entries.length ? (
+                    entries.map((meal) => (
+                      <MealCard
+                        key={meal.id}
+                        meal={meal}
+                        planner={planner}
+                        openModal={openModal}
+                      />
+                    ))
+                  ) : (
+                    <p>Nada planejado ainda.</p>
+                  )}
+                  <button
+                    className="meal-add"
+                    type="button"
+                    onClick={() =>
+                      openModal({
+                        type: "meal",
+                        preset: {
+                          date: selectedDate,
+                          type: slot.name,
+                          time: slot.time,
+                        },
+                      })
+                    }
+                  >
+                    ＋ Adicionar
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+        <aside className="hydration-card">
+          <span className="eyebrow">HIDRATAÇÃO</span>
+          <div
+            className="hydration-ring"
+            style={{ "--water-progress": `${hydrationProgress}%` }}
+            aria-label={`${hydration} de ${waterGoal} mililitros de água`}
+          >
+            <div>
+              <strong>
+                {hydration >= 1000
+                  ? `${(hydration / 1000).toFixed(1)} L`
+                  : `${hydration} ml`}
+              </strong>
+              <span>
+                de{" "}
+                {waterGoal >= 1000
+                  ? `${(waterGoal / 1000).toFixed(1)} L`
+                  : `${waterGoal} ml`}
+              </span>
+            </div>
+          </div>
+          <div className="hydration-actions">
+            {[250, 500].map((amount) => (
+              <button
+                key={amount}
+                onClick={() =>
+                  planner.setHydration(selectedDate, hydration + amount)
+                }
+                type="button"
+              >
+                +{amount} ml
+              </button>
+            ))}
+            {hydration > 0 && (
+              <button
+                onClick={() =>
+                  planner.setHydration(
+                    selectedDate,
+                    Math.max(0, hydration - 250),
+                  )
+                }
+                type="button"
+              >
+                −250 ml
+              </button>
+            )}
+          </div>
+          <label className="water-goal">
+            Meta diária (ml)
+            <input
+              type="number"
+              min="250"
+              max="10000"
+              value={goal}
+              onChange={(event) => setGoal(event.target.value)}
+              onBlur={saveGoal}
+            />
+          </label>
+        </aside>
+      </div>
+    </PageFrame>
+  );
+}
+
 function Workouts({ data, openModal, planner }) {
   const [view, setView] = useState("day");
   const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -3183,6 +3556,13 @@ const defaults = {
     frequency: ["Seg", "Ter", "Qua", "Qui", "Sex"],
     target: 1,
   },
+  meal: {
+    title: "",
+    date: today(),
+    type: "Café da manhã",
+    time: "07:30",
+    notes: "",
+  },
   workout: {
     name: "",
     bodyPart: "Corpo inteiro",
@@ -3222,6 +3602,13 @@ function modalForm(type, initial, data, preset = {}) {
         resourceUrl: initial.resourceUrl || "",
       },
       habit: initial,
+      meal: {
+        title: initial.title,
+        date: initial.date,
+        type: initial.type,
+        time: initial.time || "",
+        notes: initial.notes || "",
+      },
       workout: { ...initial, bodyPart: initial.bodyPart || initial.focus },
     };
     return { ...defaults[type], ...fields[type] };
@@ -3252,6 +3639,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
     path: isEditing ? "Editar trilha de estudo" : "Nova trilha de estudo",
     topic: isEditing ? "Editar tópico" : "Novo tópico",
     habit: isEditing ? "Editar hábito" : "Novo hábito",
+    meal: isEditing ? "Editar refeição" : "Nova refeição",
     workout: isEditing ? "Editar treino" : "Novo treino",
   }[type];
   const description = {
@@ -3263,6 +3651,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
     path: "Organize uma sequência contínua de aprendizado.",
     topic: "Inclua uma etapa concreta na sua trilha.",
     habit: "Escolha um pequeno acordo que se repete na semana.",
+    meal: "Planeje o que você quer comer e deixe o dia mais simples.",
     workout: "Defina onde o movimento entra na sua rotina.",
   }[type];
   const set = (patch) => setForm((value) => ({ ...value, ...patch }));
@@ -3278,6 +3667,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
       path: planner.addStudyPath,
       topic: planner.addStudyTopic,
       habit: planner.addHabit,
+      meal: planner.addMeal,
       workout: planner.addWorkout,
     };
     const updateOperations = {
@@ -3288,6 +3678,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
       path: planner.updateStudyPath,
       topic: planner.updateStudyTopic,
       habit: planner.updateHabit,
+      meal: planner.updateMeal,
       workout: planner.updateWorkout,
     };
     const result = isEditing
@@ -3678,6 +4069,58 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
               />
             </>
           )}
+          {type === "meal" && (
+            <>
+              <label>
+                Refeição ou alimentos
+                <input
+                  autoFocus
+                  required
+                  value={form.title}
+                  onChange={(event) => set({ title: event.target.value })}
+                  placeholder="Ex.: Arroz, frango e salada"
+                />
+              </label>
+              <div className="form-grid">
+                <label>
+                  Dia
+                  <input
+                    type="date"
+                    required
+                    value={form.date}
+                    onChange={(event) => set({ date: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Horário
+                  <input
+                    type="time"
+                    value={form.time}
+                    onChange={(event) => set({ time: event.target.value })}
+                  />
+                </label>
+              </div>
+              <label>
+                Momento do dia
+                <select
+                  value={form.type}
+                  onChange={(event) => set({ type: event.target.value })}
+                >
+                  {mealSlots.map((slot) => (
+                    <option key={slot.name}>{slot.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Observações (opcional)
+                <textarea
+                  value={form.notes}
+                  onChange={(event) => set({ notes: event.target.value })}
+                  placeholder="Ex.: Sem lactose, preparar na noite anterior ou incluir fruta."
+                />
+              </label>
+            </>
+          )}
           {type === "workout" && (
             <>
               <label>
@@ -3793,6 +4236,9 @@ function AppShell({ auth, planner }) {
     routine: (
       <Routine data={planner.data} planner={planner} openModal={openModal} />
     ),
+    nutrition: (
+      <Nutrition data={planner.data} planner={planner} openModal={openModal} />
+    ),
     workouts: (
       <Workouts data={planner.data} planner={planner} openModal={openModal} />
     ),
@@ -3866,9 +4312,11 @@ function AppShell({ auth, planner }) {
                         ? "workout"
                         : page === "routine"
                           ? "habit"
-                          : page === "agenda"
-                            ? "event"
-                            : "task",
+                          : page === "nutrition"
+                            ? "meal"
+                            : page === "agenda"
+                              ? "event"
+                              : "task",
                 )
               }
             >

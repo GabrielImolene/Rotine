@@ -1,6 +1,6 @@
 # Moletas
 
-Aplicação React de planejamento pessoal para múltiplos usuários. Cada pessoa possui uma conta própria e enxerga apenas a própria agenda, tarefas, estudos, rotina, treinos e preferências de alertas.
+Aplicação React de planejamento pessoal para múltiplos usuários. Cada pessoa possui uma conta própria e enxerga apenas a própria agenda, tarefas, estudos, rotina, alimentação, treinos e preferências de alertas.
 
 ## O que está incluído
 
@@ -12,6 +12,7 @@ Aplicação React de planejamento pessoal para múltiplos usuários. Cada pessoa
 - Estudos por matéria, meta semanal e registro de sessões.
 - Trilhas de estudo contínuas com tópicos, anotações, links, certificados, imagens e progresso.
 - Hábitos, rotina e progresso diário.
+- Alimentação organizada por dia e momento da refeição, com registro de consumo e hidratação.
 - Planos de treino organizados por dia e grupo muscular, com histórico de sessões.
 - Tema claro/escuro persistente e interface adaptada para celular.
 - E-mail (Resend) e SMS/WhatsApp (Twilio) preparados em uma função de servidor da Vercel.
@@ -37,7 +38,7 @@ Sem `.env.local`, a tela de acesso informa que a conexão com o Supabase é nece
 ## Configuração do Supabase
 
 1. Crie um projeto no Supabase.
-2. No **SQL Editor**, execute [a migration inicial](supabase/migrations/20260922_moletas_schema.sql). Se ela já foi executada, rode também [a migration dos cronômetros](supabase/migrations/20260923_task_timers.sql), [a migration de trilhas e treinos](supabase/migrations/20260927_learning_paths_and_workout_groups.sql), [a migration de notas](supabase/migrations/20260928_notes_and_crud.sql) e [a migration de materiais e MFA](supabase/migrations/20260929_study_files_and_mfa.sql).
+2. No **SQL Editor**, execute [a migration inicial](supabase/migrations/20260922_moletas_schema.sql). Se ela já foi executada, rode também [a migration dos cronômetros](supabase/migrations/20260923_task_timers.sql), [a migration de trilhas e treinos](supabase/migrations/20260927_learning_paths_and_workout_groups.sql), [a migration de notas](supabase/migrations/20260928_notes_and_crud.sql), [a migration de materiais e MFA](supabase/migrations/20260929_study_files_and_mfa.sql) e [a migration de alimentação](supabase/migrations/20260930_nutrition.sql).
 3. Em **Authentication → URL Configuration**, informe a URL de produção da Vercel como _Site URL_ e em _Redirect URLs_.
 4. Em **Authentication**, mantenha a confirmação de e-mail ativada e configure um SMTP próprio antes de abrir o cadastro ao público.
 5. Copie a URL e a **Publishable key** para `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`.

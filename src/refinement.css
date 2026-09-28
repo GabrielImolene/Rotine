@@ -135,6 +135,23 @@
   left: 6.5px;
   top: 6.5px;
 }
+.nav-icon-nutrition::before {
+  width: 10px;
+  height: 12px;
+  left: 4px;
+  top: 3px;
+  border: 1.6px solid currentColor;
+  border-radius: 2px 2px 7px 7px;
+}
+.nav-icon-nutrition::after {
+  width: 1.6px;
+  height: 13px;
+  left: 1px;
+  top: 2.5px;
+  background: currentColor;
+  border-radius: 2px;
+  box-shadow: 3px 0 currentColor;
+}
 .nav-icon-workouts::before {
   width: 10px;
   height: 3px;
@@ -1467,6 +1484,291 @@
   margin-top: 0;
 }
 
+.nutrition-overview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 15px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 17px;
+  background: var(--surface);
+}
+.nutrition-date-nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+  flex: 1;
+}
+.nutrition-date-nav > button,
+.nutrition-today {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  transition: 150ms ease;
+}
+.nutrition-date-nav > button:hover,
+.nutrition-today:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.nutrition-date-nav > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.nutrition-date-nav strong {
+  overflow: hidden;
+  font-size: 13px;
+  letter-spacing: -0.3px;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.nutrition-today {
+  width: auto;
+  flex-basis: auto;
+  padding: 0 9px;
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 800;
+}
+.nutrition-status {
+  display: grid;
+  min-width: 105px;
+  gap: 1px;
+  border-left: 1px solid var(--line);
+  padding-left: 15px;
+}
+.nutrition-status strong {
+  color: var(--primary);
+  font-size: 16px;
+  letter-spacing: -0.7px;
+}
+.nutrition-status span {
+  color: var(--muted);
+  font-size: 8px;
+}
+.nutrition-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 238px;
+  gap: 14px;
+  align-items: start;
+}
+.meal-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+.meal-lane {
+  overflow: hidden;
+  min-height: 185px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.meal-lane > header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 14px 11px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-2) 52%, var(--surface));
+}
+.meal-lane > header > span {
+  color: var(--primary);
+  font:
+    700 8px "DM Mono",
+    monospace;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.meal-lane h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: -0.35px;
+}
+.meal-lane header small {
+  color: var(--muted);
+  font:
+    700 8px "DM Mono",
+    monospace;
+}
+.meal-lane-content {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+.meal-lane-content > p {
+  margin: 3px 4px 0;
+  color: var(--muted);
+  font-size: 9px;
+}
+.meal-card {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.meal-card.done {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
+  background: linear-gradient(120deg, var(--primary-soft), var(--surface));
+}
+.meal-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+.meal-check {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 900;
+}
+.meal-card.done .meal-check {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.meal-card-head > span {
+  color: var(--muted);
+  font:
+    700 8px "DM Mono",
+    monospace;
+}
+.meal-card-head .item-actions {
+  margin-left: auto;
+}
+.meal-card strong {
+  display: block;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.meal-card.done strong {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.meal-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+.meal-add {
+  min-height: 30px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 8px;
+  font-weight: 800;
+  transition: 150ms ease;
+}
+.meal-add:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.hydration-card {
+  display: grid;
+  justify-items: center;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 17px;
+  background: var(--surface);
+}
+.hydration-card > .eyebrow {
+  justify-self: start;
+  margin-bottom: 11px;
+}
+.hydration-ring {
+  display: grid;
+  width: 142px;
+  height: 142px;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--aqua) var(--water-progress),
+    var(--surface-2) 0
+  );
+}
+.hydration-ring > div {
+  display: grid;
+  width: 116px;
+  height: 116px;
+  place-items: center;
+  align-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  text-align: center;
+}
+.hydration-ring strong {
+  color: var(--ink);
+  font-size: 19px;
+  letter-spacing: -0.9px;
+}
+.hydration-ring span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+.hydration-actions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 15px;
+}
+.hydration-actions button {
+  min-height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--aqua);
+  font-size: 8px;
+  font-weight: 800;
+}
+.hydration-actions button:hover {
+  border-color: var(--aqua);
+  background: var(--aqua-soft);
+}
+.water-goal {
+  display: grid;
+  width: 100%;
+  gap: 5px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+}
+.water-goal input {
+  min-height: 33px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 10px;
+}
+
 @media (max-width: 760px) {
   .learning-path-grid {
     grid-template-columns: 1fr;
@@ -1485,6 +1787,22 @@
     flex-direction: column;
   }
   .workout-board {
+    grid-template-columns: 1fr;
+  }
+  .nutrition-overview {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .nutrition-status {
+    min-width: 0;
+    border-left: 0;
+    padding-left: 0;
+  }
+  .nutrition-layout,
+  .meal-board {
+    grid-template-columns: 1fr;
+  }
+  .hydration-card {
     grid-template-columns: 1fr;
   }
   .planner-toolbar {
