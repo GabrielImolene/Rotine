@@ -1,44 +1,44 @@
-/* Direção visual Moletas: neutros claros, verde-petróleo e azul profundo. */
+/* Direção visual Moletas: tricolor em vermelho, branco e preto. */
 :root {
-  --bg: #f6f8f7;
+  --bg: #f7f7f7;
   --surface: #ffffff;
-  --surface-2: #eef3f1;
-  --ink: #182522;
-  --muted: #71807a;
-  --line: #dfe8e4;
-  --primary: #087b70;
-  --primary-soft: #ddf3ee;
-  --aqua: #247d9e;
-  --aqua-soft: #ddecf3;
-  --amber: #bb7835;
-  --amber-soft: #fff0df;
-  --rose: #b95d6c;
-  --rose-soft: #fae6e9;
-  --green: #15926a;
-  --blue: #247d9e;
-  --orange: #bb7835;
-  --shadow: 0 16px 38px rgba(24, 47, 40, 0.07);
+  --surface-2: #f0f0f1;
+  --ink: #161616;
+  --muted: #707074;
+  --line: #e0e0e2;
+  --primary: #d51f32;
+  --primary-soft: #fde8eb;
+  --aqua: #1a1a1b;
+  --aqua-soft: #ededee;
+  --amber: #77777a;
+  --amber-soft: #eeeeef;
+  --rose: #ad1025;
+  --rose-soft: #f9e5e8;
+  --green: #d51f32;
+  --blue: #1a1a1b;
+  --orange: #77777a;
+  --shadow: 0 16px 38px rgba(20, 20, 23, 0.08);
 }
 
 [data-theme="dark"] {
-  --bg: #0e1917;
-  --surface: #15231f;
-  --surface-2: #1c2d28;
-  --ink: #eff8f4;
-  --muted: #a9bbb4;
-  --line: #2b403a;
-  --primary: #55c5b5;
-  --primary-soft: #173b34;
-  --aqua: #73c4e4;
-  --aqua-soft: #173643;
-  --amber: #f0b36a;
-  --amber-soft: #3b2c1e;
-  --rose: #f09baa;
-  --rose-soft: #3f252b;
-  --green: #68d5a8;
-  --blue: #73c4e4;
-  --orange: #f0b36a;
-  --shadow: 0 22px 56px rgba(0, 0, 0, 0.24);
+  --bg: #101011;
+  --surface: #19191b;
+  --surface-2: #242426;
+  --ink: #f8f8f8;
+  --muted: #b3b3b7;
+  --line: #343437;
+  --primary: #ef3347;
+  --primary-soft: #4a1920;
+  --aqua: #f0f0f1;
+  --aqua-soft: #2b2b2e;
+  --amber: #c5c5c8;
+  --amber-soft: #303033;
+  --rose: #ff9aa6;
+  --rose-soft: #432229;
+  --green: #ef3347;
+  --blue: #f0f0f1;
+  --orange: #c5c5c8;
+  --shadow: 0 22px 56px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar {
@@ -247,16 +247,16 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.nav-icon-overview { --icon-tint: #d8f4ed; }
-.nav-icon-calendar { --icon-tint: #dcedf4; }
-.nav-icon-tasks { --icon-tint: #e6e1ff; }
-.nav-icon-notes { --icon-tint: #fff0dc; }
-.nav-icon-study { --icon-tint: #e6edf8; }
-.nav-icon-routine { --icon-tint: #e1f1dd; }
-.nav-icon-nutrition { --icon-tint: #ffeddb; }
-.nav-icon-workouts { --icon-tint: #e4e8ff; }
-.nav-icon-alerts { --icon-tint: #fbe3e7; }
-.nav-icon-account { --icon-tint: #e1f1ee; }
+.nav-icon-overview { --icon-tint: #f8dfe3; }
+.nav-icon-calendar { --icon-tint: #e8e8ea; }
+.nav-icon-tasks { --icon-tint: #f2d5da; }
+.nav-icon-notes { --icon-tint: #eeeeef; }
+.nav-icon-study { --icon-tint: #e4e4e6; }
+.nav-icon-routine { --icon-tint: #f6e2e5; }
+.nav-icon-nutrition { --icon-tint: #ececee; }
+.nav-icon-workouts { --icon-tint: #e2e2e4; }
+.nav-icon-alerts { --icon-tint: #f8dfe3; }
+.nav-icon-account { --icon-tint: #ededee; }
 .sidebar nav button:hover > .nav-icon {
   color: var(--primary);
   border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
@@ -265,8 +265,8 @@
 .sidebar nav button.active > .nav-icon {
   color: #fff;
   border-color: transparent;
-  background: linear-gradient(145deg, #16aa9d, #087b70);
-  box-shadow: 0 5px 12px rgba(8, 123, 112, 0.24);
+  background: linear-gradient(145deg, #ef3347, #b30f25);
+  box-shadow: 0 5px 12px rgba(181, 15, 37, 0.24);
 }
 .sidebar nav button.active > .nav-icon svg {
   stroke-width: 2;
@@ -294,27 +294,28 @@
 }
 
 .brand-symbol i {
-  background: linear-gradient(155deg, #83ded1, #078c80);
+  background: linear-gradient(155deg, #38383b, #121213);
 }
 .brand-symbol i:nth-child(2) {
-  background: linear-gradient(155deg, #99cce0, #267d9d);
+  border: 1px solid #d8d8da;
+  background: linear-gradient(155deg, #ffffff, #e6e6e8);
 }
 .brand-symbol i:nth-child(3) {
-  background: linear-gradient(155deg, #b8e4dc, #37aa9b);
+  background: linear-gradient(155deg, #ef3347, #b50d24);
 }
 .auth-intro .brand-symbol b {
-  background: #087b70;
+  background: #d51f32;
 }
 
 .market-hero {
-  background: linear-gradient(118deg, #102925 0%, #164842 58%, #24736c 100%);
-  border: 1px solid rgba(103, 205, 190, 0.18);
+  background: linear-gradient(118deg, #101011 0%, #1d1d20 48%, #a91428 150%);
+  border: 1px solid rgba(213, 31, 50, 0.3);
 }
 .market-hero::before {
   background:
     radial-gradient(
       circle at 74% 30%,
-      rgba(141, 219, 211, 0.2),
+      rgba(239, 51, 71, 0.28),
       transparent 21%
     ),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
@@ -323,53 +324,53 @@
 .market-hero .eyebrow,
 .compass-label,
 .compass-core > span {
-  color: #c0e8e0;
+  color: #ffd8de;
 }
 .market-hero h1 em,
 .market-hero p,
 .hero-link {
-  color: #dbf2ed;
+  color: #f3f3f4;
 }
 .market-hero .button.primary {
-  color: #0b5149;
+  color: #171717;
 }
 .compass-core {
-  background: rgba(10, 45, 40, 0.52);
-  border-color: rgba(217, 246, 239, 0.35);
+  background: rgba(20, 20, 22, 0.66);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 .compass-orbit {
-  border-color: rgba(174, 237, 227, 0.42);
+  border-color: rgba(255, 255, 255, 0.42);
 }
 .orbit-two {
-  border-color: rgba(159, 213, 232, 0.46);
+  border-color: rgba(239, 51, 71, 0.58);
 }
 .compass-dot {
-  background: #b3f5e9;
-  box-shadow: 0 0 18px #7bd8c9;
+  background: #ef3347;
+  box-shadow: 0 0 18px rgba(239, 51, 71, 0.68);
 }
 .week-day.selected {
-  box-shadow: 0 8px 17px rgba(8, 123, 112, 0.22);
+  box-shadow: 0 8px 17px rgba(181, 15, 37, 0.22);
 }
 .button.light {
-  color: #08685f;
+  color: #a91025;
 }
 
 .clean-banner {
-  background: linear-gradient(115deg, #123c36, #1c665d);
-  border: 1px solid rgba(129, 220, 205, 0.22);
+  background: linear-gradient(115deg, #151517, #8e1023);
+  border: 1px solid rgba(239, 51, 71, 0.28);
 }
 .clean-banner .eyebrow,
 .clean-banner p {
-  color: #d7efea;
+  color: #f6e7e9;
 }
 .auth-intro,
 .auth-page {
-  background: linear-gradient(145deg, #10342f, #17645c);
+  background: linear-gradient(145deg, #151517, #b30f25);
 }
 .auth-intro .eyebrow,
 .auth-intro p,
 .auth-points {
-  color: #d9f0eb;
+  color: #f7e9eb;
 }
 .auth-recovery {
   margin-top: 4px;
@@ -1563,15 +1564,15 @@
   min-height: 100vh;
   place-items: center;
   padding: 22px;
-  background: linear-gradient(145deg, #0d2621, #155b52);
+  background: linear-gradient(145deg, #111112, #9f1024);
 }
 .mfa-card {
   width: min(410px, 100%);
   padding: 29px;
-  border: 1px solid rgba(211, 246, 239, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 20px;
   background: var(--surface);
-  box-shadow: 0 24px 60px rgba(3, 17, 14, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
 }
 .mfa-card .brand {
   margin-bottom: 33px;
@@ -1648,7 +1649,7 @@
   color: var(--ink);
 }
 .auth-card .brand-symbol b {
-  background: #087b70;
+  background: #d51f32;
 }
 .auth-card form {
   gap: 11px;
@@ -2263,7 +2264,7 @@
   }
   .mobile-menu-grid button.active > .nav-icon {
     border-color: transparent;
-    background: linear-gradient(145deg, #16aa9d, #087b70);
+    background: linear-gradient(145deg, #ef3347, #b30f25);
     color: #fff;
   }
 }

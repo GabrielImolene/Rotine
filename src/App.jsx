@@ -13,7 +13,7 @@ const navItems = [
   ["alerts", "Alertas", "alerts"],
   ["account", "Conta", "account"],
 ];
-const colors = ["#0c7b72", "#267aa0", "#d17a39", "#bd5f70", "#708d4b"];
+const colors = ["#d51f32", "#171717", "#7d7d80", "#a60f25", "#e8b7be"];
 const newId = () =>
   `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const pad = (value) => String(value).padStart(2, "0");
@@ -4514,7 +4514,7 @@ function AppShell({ auth, planner }) {
     localStorage.setItem("moletas-theme", theme);
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "dark" ? "#10201d" : "#0c7b72");
+      ?.setAttribute("content", theme === "dark" ? "#111112" : "#d51f32");
   }, [theme]);
   const content = {
     overview: (
