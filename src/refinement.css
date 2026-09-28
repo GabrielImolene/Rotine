@@ -218,6 +218,81 @@
     0 6px currentColor;
 }
 
+/* Ícones próprios Moletas: uma única família de traço, sem glifos de texto. */
+.sidebar nav button > .nav-icon,
+.mobile-nav button > .nav-icon {
+  --icon-tint: var(--primary-soft);
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, currentColor 12%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--icon-tint) 48%, transparent);
+  color: currentColor;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nav-icon::before,
+.nav-icon::after {
+  display: none;
+}
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-icon-overview { --icon-tint: #d8f4ed; }
+.nav-icon-calendar { --icon-tint: #dcedf4; }
+.nav-icon-tasks { --icon-tint: #e6e1ff; }
+.nav-icon-notes { --icon-tint: #fff0dc; }
+.nav-icon-study { --icon-tint: #e6edf8; }
+.nav-icon-routine { --icon-tint: #e1f1dd; }
+.nav-icon-nutrition { --icon-tint: #ffeddb; }
+.nav-icon-workouts { --icon-tint: #e4e8ff; }
+.nav-icon-alerts { --icon-tint: #fbe3e7; }
+.nav-icon-account { --icon-tint: #e1f1ee; }
+.sidebar nav button:hover > .nav-icon {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
+  transform: translateX(1px) rotate(-2deg);
+}
+.sidebar nav button.active > .nav-icon {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(145deg, #16aa9d, #087b70);
+  box-shadow: 0 5px 12px rgba(8, 123, 112, 0.24);
+}
+.sidebar nav button.active > .nav-icon svg {
+  stroke-width: 2;
+}
+.icon-button {
+  display: grid;
+  place-items: center;
+}
+.theme-icon {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.add-icon {
+  display: inline-grid;
+  width: 14px;
+  height: 14px;
+  place-items: center;
+  border: 1.4px solid currentColor;
+  border-radius: 50%;
+  font: 700 13px/1 Arial, sans-serif;
+}
+
 .brand-symbol i {
   background: linear-gradient(155deg, #83ded1, #078c80);
 }

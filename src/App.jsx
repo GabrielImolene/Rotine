@@ -1309,8 +1309,88 @@ function Brand({ compact = false }) {
 }
 
 function NavIcon({ name }) {
+  const icons = {
+    overview: (
+      <>
+        <rect x="3" y="3" width="7" height="7" rx="2" />
+        <rect x="14" y="3" width="7" height="7" rx="2" />
+        <rect x="3" y="14" width="7" height="7" rx="2" />
+        <path d="M15 17.5h5M17.5 15v5" />
+      </>
+    ),
+    calendar: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="3" />
+        <path d="M7 3v4M17 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+      </>
+    ),
+    tasks: (
+      <>
+        <path d="m4 7 2.2 2.2L10 5.4M13 7h7M4 17l2.2 2.2L10 15.4M13 19h7" />
+      </>
+    ),
+    notes: (
+      <>
+        <path d="M6 3h9l4 4v14H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+        <path d="M14 3v5h5M8 13h8M8 17h6" />
+      </>
+    ),
+    study: (
+      <>
+        <path d="M4 5.8A3.8 3.8 0 0 1 8 5h3.4c1 0 1.8.8 1.8 1.8V20H8a4 4 0 0 0-4 1V5.8Z" />
+        <path d="M20 5.8A3.8 3.8 0 0 0 16 5h-2.8v15H16a4 4 0 0 1 4 1V5.8ZM8 9h2.5M16 9h-1.2" />
+      </>
+    ),
+    routine: (
+      <>
+        <path d="M20 8A8.5 8.5 0 1 0 20.5 15" />
+        <path d="M20 3v5h-5M12 7v5l3 2" />
+      </>
+    ),
+    nutrition: (
+      <>
+        <path d="M4 4v6M7 4v6M4 7h3M5.5 10v10M14 4v7a3 3 0 0 0 6 0V4M17 14v6" />
+      </>
+    ),
+    workouts: (
+      <>
+        <path d="M8 8v8M5 10v4M3 9v6M16 8v8M19 10v4M21 9v6M8 12h8" />
+      </>
+    ),
+    alerts: (
+      <>
+        <path d="M18 10a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 22h4" />
+        <path d="M19 5.5 21 4M5 5.5 3 4" />
+      </>
+    ),
+    account: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0M18 14.5l1.2 1.2L22 13" />
+      </>
+    ),
+  };
   return (
-    <span className={`nav-icon nav-icon-${name}`} aria-hidden="true"></span>
+    <span className={`nav-icon nav-icon-${name}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        {icons[name] || icons.overview}
+      </svg>
+    </span>
+  );
+}
+
+function ThemeIcon({ theme }) {
+  return (
+    <svg className="theme-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {theme === "light" ? (
+        <path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.5 8.5 0 1 0 20.5 14.3Z" />
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </>
+      )}
+    </svg>
   );
 }
 
@@ -4297,7 +4377,7 @@ function AppShell({ auth, planner }) {
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             aria-label="Alternar tema"
           >
-            {theme === "light" ? "◐" : "☀"}
+            <ThemeIcon theme={theme} />
           </button>
           {page !== "account" && (
             <button
@@ -4320,7 +4400,7 @@ function AppShell({ auth, planner }) {
                 )
               }
             >
-              ＋ <span>Novo</span>
+              <span className="add-icon" aria-hidden="true">+</span> <span>Novo</span>
             </button>
           )}
         </div>
