@@ -1198,8 +1198,8 @@ function AuthScreen({ auth }) {
       <section className="auth-card" aria-label="Acesso à Moletas">
         <Brand />
         <form onSubmit={submit}>
-          <label className="sr-only">
-            E-mail
+          <label>
+            <span className="sr-only">E-mail</span>
             <input
               type="email"
               value={email}
@@ -1209,8 +1209,8 @@ function AuthScreen({ auth }) {
               autoComplete="email"
             />
           </label>
-          <label className="sr-only">
-            Senha
+          <label>
+            <span className="sr-only">Senha</span>
             <input
               type="password"
               value={password}
