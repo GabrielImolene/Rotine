@@ -1369,6 +1369,14 @@ function NavIcon({ name }) {
         <path d="M4 21a8 8 0 0 1 16 0M18 14.5l1.2 1.2L22 13" />
       </>
     ),
+    more: (
+      <>
+        <rect x="4" y="4" width="6" height="6" rx="1.7" />
+        <rect x="14" y="4" width="6" height="6" rx="1.7" />
+        <rect x="4" y="14" width="6" height="6" rx="1.7" />
+        <path d="M17 15.5v3M15.5 17h3" />
+      </>
+    ),
   };
   return (
     <span className={`nav-icon nav-icon-${name}`} aria-hidden="true">
@@ -4288,6 +4296,7 @@ function AppShell({ auth, planner }) {
     () => localStorage.getItem("moletas-theme") || "light",
   );
   const [modal, setModal] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const openModal = (request) =>
     setModal(typeof request === "string" ? { type: request } : request);
   useEffect(() => {
@@ -4327,6 +4336,19 @@ function AppShell({ auth, planner }) {
     ),
     account: <Account auth={auth} data={planner.data} planner={planner} />,
   }[page];
+  const mobilePrimaryItems = navItems.filter(([id]) =>
+    ["overview", "agenda", "tasks", "study"].includes(id),
+  );
+  const mobileExtraItems = navItems.filter(
+    ([id]) => !mobilePrimaryItems.some(([primaryId]) => primaryId === id),
+  );
+  const syncMessage = planner.syncing
+    ? "Salvando alterações…"
+    : planner.error ||
+      (auth.configured
+        ? "Sincronizado com segurança"
+        : "Conexão com Supabase pendente");
+  const syncTone = planner.error ? "error" : planner.syncing ? "pending" : "ready";
   return (
     <div className="app">
       <aside className="sidebar">
@@ -4363,13 +4385,9 @@ function AppShell({ auth, planner }) {
         <div className="mobile-logo">
           <Brand compact />
         </div>
-        <p>
-          {planner.syncing
-            ? "Salvando alterações…"
-            : planner.error ||
-              (auth.configured
-                ? "Sincronizado com segurança"
-                : "Use .env.local para conectar ao Supabase")}
+        <p className={`sync-status ${syncTone}`} title={syncMessage}>
+          <span aria-hidden="true"></span>
+          {syncMessage}
         </p>
         <div>
           <button
@@ -4412,18 +4430,77 @@ function AppShell({ auth, planner }) {
           content
         )}
       </main>
-      <nav className="mobile-nav">
-        {navItems.map(([id, label, icon]) => (
+      <nav className="mobile-nav" aria-label="Navegação principal">
+        {mobilePrimaryItems.map(([id, label, icon]) => (
           <button
             className={page === id ? "active" : ""}
             key={id}
-            onClick={() => setPage(id)}
+            onClick={() => {
+              setPage(id);
+              setMobileMenuOpen(false);
+            }}
           >
             <NavIcon name={icon} />
             <small>{label}</small>
           </button>
         ))}
+        <button
+          aria-controls="mobile-more-menu"
+          aria-expanded={mobileMenuOpen}
+          className={mobileExtraItems.some(([id]) => page === id) ? "active" : ""}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          type="button"
+        >
+          <NavIcon name="more" />
+          <small>Mais</small>
+        </button>
       </nav>
+      {mobileMenuOpen && (
+        <div
+          className="mobile-menu-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+          role="presentation"
+        >
+          <section
+            aria-label="Mais áreas do Moletas"
+            className="mobile-menu"
+            id="mobile-more-menu"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mobile-menu-head">
+              <div>
+                <span className="eyebrow">MOLETAS</span>
+                <strong>Mais áreas</strong>
+              </div>
+              <button
+                aria-label="Fechar menu"
+                onClick={() => setMobileMenuOpen(false)}
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m6 6 12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+            <div className="mobile-menu-grid">
+              {mobileExtraItems.map(([id, label, icon]) => (
+                <button
+                  className={page === id ? "active" : ""}
+                  key={id}
+                  onClick={() => {
+                    setPage(id);
+                    setMobileMenuOpen(false);
+                  }}
+                  type="button"
+                >
+                  <NavIcon name={icon} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
       {modal?.type === "materials" ? (
         <SubjectMaterialsModal
           close={() => setModal(null)}
