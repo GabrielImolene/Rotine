@@ -1068,6 +1068,10 @@ function usePlanner(user, isDemo) {
     removeEvent: (id) => remove("calendar_events", id, "events"),
     removeTask: (id) => remove("tasks", id, "tasks"),
     removeNote: (id) => remove("notes", id, "notes"),
+    removeStudySession: (id) =>
+      remove("study_sessions", id, "studySessions"),
+    removeWorkoutSession: (id) =>
+      remove("workout_sessions", id, "workoutSessions"),
     removeSubject: async (id) => {
       const relatedAttachments = data.attachments.filter(
         (attachment) => attachment.subjectId === id,
@@ -2036,6 +2040,85 @@ function TaskTimer({ task, planner }) {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 7h16M10 11v6M14 11v6M9 7l1-3h4l1 3M6.5 7l.8 13h9.4l.8-13" />
+    </svg>
+  );
+}
+
+function DeleteButton({ onDelete, label, disabled = false }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  async function confirmDeletion() {
+    setBusy(true);
+    setMessage("");
+    try {
+      const result = await onDelete();
+      if (result !== null) setConfirming(false);
+      else setMessage("Não foi possível excluir agora. Tente novamente.");
+    } catch {
+      setMessage("Não foi possível excluir agora. Tente novamente.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <button
+        aria-label={`Excluir ${label}`}
+        className="delete-action"
+        disabled={disabled}
+        onClick={() => setConfirming(true)}
+        title={`Excluir ${label}`}
+        type="button"
+      >
+        <TrashIcon />
+      </button>
+      {confirming && (
+        <div
+          className="confirm-delete-backdrop"
+          onMouseDown={() => !busy && setConfirming(false)}
+          role="presentation"
+        >
+          <section
+            aria-label={`Excluir ${label}`}
+            aria-modal="true"
+            className="confirm-delete"
+            onMouseDown={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <span className="confirm-delete-icon"><TrashIcon /></span>
+            <h2>Excluir {label}?</h2>
+            <p>Esta ação não pode ser desfeita.</p>
+            {message && <p className="form-message">{message}</p>}
+            <div>
+              <button
+                className="button ghost"
+                disabled={busy}
+                onClick={() => setConfirming(false)}
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                className="button danger"
+                disabled={busy}
+                onClick={confirmDeletion}
+                type="button"
+              >
+                {busy ? "Excluindo…" : "Excluir"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
 function TaskRow({ task, onToggle, onDelete, onEdit, planner }) {
   return (
     <div className={`task-row ${task.completedAt ? "completed" : ""}`}>
@@ -2070,13 +2153,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit, planner }) {
         </button>
       )}
       {onDelete && (
-        <button
-          className="delete"
-          onClick={onDelete}
-          aria-label="Excluir tarefa"
-        >
-          ×
-        </button>
+        <DeleteButton onDelete={onDelete} label="esta tarefa" />
       )}
     </div>
   );
@@ -2118,13 +2195,10 @@ function LegacyAgenda({ data, openModal, planner }) {
                 >
                   Editar
                 </button>
-                <button
-                  className="delete"
-                  onClick={() => planner.removeEvent(event.id)}
-                  aria-label="Excluir compromisso"
-                >
-                  ×
-                </button>
+                <DeleteButton
+                  label="este compromisso"
+                  onDelete={() => planner.removeEvent(event.id)}
+                />
               </article>
             ))}
           </div>
@@ -2221,13 +2295,10 @@ function Notes({ data, openModal, planner }) {
                   >
                     Editar
                   </button>
-                  <button
-                    className="delete"
-                    onClick={() => planner.removeNote(note.id)}
-                    aria-label="Excluir nota"
-                  >
-                    ×
-                  </button>
+                  <DeleteButton
+                    label="esta nota"
+                    onDelete={() => planner.removeNote(note.id)}
+                  />
                 </div>
               </div>
               <h3>{note.title}</h3>
@@ -2268,13 +2339,10 @@ function StudyPathCard({ path, data, planner, onEdit }) {
           <button className="edit" onClick={onEdit} aria-label="Editar trilha">
             Editar
           </button>
-          <button
-            className="delete"
-            onClick={() => planner.removeStudyPath(path.id)}
-            aria-label="Excluir trilha de estudos"
-          >
-            ×
-          </button>
+          <DeleteButton
+            label="esta trilha de estudos"
+            onDelete={() => planner.removeStudyPath(path.id)}
+          />
         </div>
       </header>
       {path.description && (
@@ -2327,13 +2395,10 @@ function StudyPathCard({ path, data, planner, onEdit }) {
                   >
                     Editar
                   </button>
-                  <button
-                    className="delete"
-                    onClick={() => planner.removeStudyTopic(topic.id)}
-                    aria-label="Excluir tópico"
-                  >
-                    ×
-                  </button>
+                  <DeleteButton
+                    label="este tópico"
+                    onDelete={() => planner.removeStudyTopic(topic.id)}
+                  />
                 </div>
               </article>
             );
@@ -2464,13 +2529,10 @@ function Study({ data, openModal, planner }) {
               >
                 Editar
               </button>
-              <button
-                className="delete"
-                onClick={() => planner.removeSubject(subject.id)}
-                aria-label="Excluir matéria"
-              >
-                ×
-              </button>
+              <DeleteButton
+                label="esta matéria"
+                onDelete={() => planner.removeSubject(subject.id)}
+              />
             </article>
           );
         })}
@@ -2500,6 +2562,10 @@ function Study({ data, openModal, planner }) {
                 </small>
               </div>
               <b>{session.minutes} min</b>
+              <DeleteButton
+                label="este registro de estudo"
+                onDelete={() => planner.removeStudySession(session.id)}
+              />
             </div>
           ))
         ) : (
@@ -2565,13 +2631,10 @@ function Routine({ data, openModal, planner }) {
             >
               Editar
             </button>
-            <button
-              className="delete"
-              onClick={() => planner.removeHabit(habit.id)}
-              aria-label="Excluir hábito"
-            >
-              ×
-            </button>
+            <DeleteButton
+              label="este hábito"
+              onDelete={() => planner.removeHabit(habit.id)}
+            />
           </article>
         ))}
       </div>
@@ -2599,13 +2662,10 @@ function WorkoutPlanCard({ workout, planner, data, onEdit }) {
           <button className="edit" onClick={onEdit} aria-label="Editar treino">
             Editar
           </button>
-          <button
-            className="delete"
-            onClick={() => planner.removeWorkout(workout.id)}
-            aria-label="Excluir treino"
-          >
-            ×
-          </button>
+          <DeleteButton
+            label="este treino"
+            onDelete={() => planner.removeWorkout(workout.id)}
+          />
         </div>
       </div>
       <h3>{workout.name}</h3>
@@ -2651,14 +2711,10 @@ function MealCard({ meal, planner, openModal }) {
           >
             Editar
           </button>
-          <button
-            className="delete"
-            onClick={() => planner.removeMeal(meal.id)}
-            type="button"
-            aria-label="Excluir refeição"
-          >
-            ×
-          </button>
+          <DeleteButton
+            label="esta refeição"
+            onDelete={() => planner.removeMeal(meal.id)}
+          />
         </div>
       </div>
       <strong>{meal.title}</strong>
@@ -2976,6 +3032,10 @@ function Workouts({ data, openModal, planner }) {
                 <small>{niceDate(session.completedAt, true)}</small>
               </div>
               <b>Concluído</b>
+              <DeleteButton
+                label="este registro de treino"
+                onDelete={() => planner.removeWorkoutSession(session.id)}
+              />
             </div>
           ))
         ) : (
@@ -3237,14 +3297,10 @@ function SubjectMaterialsModal({ subject, data, planner, close }) {
                   >
                     Abrir
                   </button>
-                  <button
-                    className="delete"
-                    onClick={() => planner.removeStudyAttachment(attachment)}
-                    type="button"
-                    aria-label="Excluir material"
-                  >
-                    ×
-                  </button>
+                  <DeleteButton
+                    label="este material"
+                    onDelete={() => planner.removeStudyAttachment(attachment)}
+                  />
                 </div>
               </article>
             ))
@@ -4859,13 +4915,10 @@ function Agenda({ data, openModal, planner }) {
                 >
                   Editar
                 </button>
-                <button
-                  className="delete"
-                  onClick={() => planner.removeEvent(event.id)}
-                  aria-label="Excluir compromisso"
-                >
-                  ×
-                </button>
+                <DeleteButton
+                  label="este compromisso"
+                  onDelete={() => planner.removeEvent(event.id)}
+                />
               </article>
             ))}
           </div>

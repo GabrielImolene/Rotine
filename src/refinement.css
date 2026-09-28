@@ -1128,6 +1128,94 @@
   font-size: 9px;
   line-height: 1.45;
 }
+.delete-action {
+  display: inline-grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  transition: 160ms ease;
+}
+.delete-action svg,
+.confirm-delete-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.delete-action:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--rose) 24%, var(--line));
+  background: var(--rose-soft);
+  color: var(--rose);
+  transform: translateY(-1px);
+}
+.delete-action:disabled {
+  opacity: 0.5;
+}
+.subject-card .delete-action {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+}
+.confirm-delete-backdrop {
+  position: fixed;
+  z-index: 31;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(7, 23, 20, 0.56);
+  backdrop-filter: blur(6px);
+}
+.confirm-delete {
+  width: min(360px, 100%);
+  padding: 25px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface);
+  box-shadow: 0 28px 72px rgba(5, 21, 17, 0.32);
+  text-align: center;
+}
+.confirm-delete-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 13px;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--rose-soft);
+  color: var(--rose);
+}
+.confirm-delete-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.confirm-delete h2 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.6px;
+}
+.confirm-delete > p:not(.form-message) {
+  margin: 7px 0 19px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.confirm-delete > div:last-child {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.button.danger {
+  background: var(--rose);
+  color: #fff;
+}
 .modal .wide {
   min-height: 43px;
   margin-top: 2px;
