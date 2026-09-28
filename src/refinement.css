@@ -1097,6 +1097,37 @@
 .modal .form-grid label {
   gap: 5px;
 }
+.recurrence-control {
+  min-width: 0;
+  margin: 0;
+  padding: 11px 12px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--line));
+  border-radius: 13px;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--primary-soft) 56%, var(--surface)),
+    var(--surface)
+  );
+}
+.recurrence-control legend {
+  padding: 0 5px;
+  color: var(--primary);
+  font: 700 9px "DM Mono", monospace;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.recurrence-control .form-grid {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.recurrence-note {
+  margin: 9px 1px 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
 .modal .wide {
   min-height: 43px;
   margin-top: 2px;

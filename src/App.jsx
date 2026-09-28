@@ -48,6 +48,55 @@ const weekday = (value) =>
 const isToday = (value) => dateInput(value) === today();
 const toIso = (date, time) =>
   new Date(`${date}T${time || "09:00"}:00`).toISOString();
+const dateKey = (date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+const addMonthsPreservingDay = (date, months, preferredDay = date.getDate()) => {
+  const next = new Date(date);
+  next.setDate(1);
+  next.setMonth(next.getMonth() + months);
+  const lastDay = new Date(
+    next.getFullYear(),
+    next.getMonth() + 1,
+    0,
+  ).getDate();
+  next.setDate(Math.min(preferredDay, lastDay));
+  return next;
+};
+const recurrenceCopy = {
+  daily: "Todos os dias",
+  weekdays: "Nos dias úteis",
+  weekly: "Toda semana",
+  monthly: "Todo mês",
+};
+function generateEventOccurrences(form) {
+  if (form.recurrence === "none") return [form];
+  if (!form.recurrenceUntil)
+    throw new Error("Escolha até quando o compromisso deve se repetir.");
+  if (form.recurrenceUntil < form.date)
+    throw new Error("A data final precisa ser igual ou posterior à primeira data.");
+
+  const until = new Date(`${form.recurrenceUntil}T12:00:00`);
+  let cursor = new Date(`${form.date}T12:00:00`);
+  const monthlyDay = cursor.getDate();
+  const occurrences = [];
+  while (cursor <= until) {
+    if (form.recurrence !== "weekdays" || ![0, 6].includes(cursor.getDay())) {
+      occurrences.push({ ...form, date: dateKey(cursor) });
+    }
+    if (occurrences.length > 180)
+      throw new Error("Escolha um período de até 180 ocorrências por vez.");
+    if (form.recurrence === "daily" || form.recurrence === "weekdays") {
+      cursor.setDate(cursor.getDate() + 1);
+    } else if (form.recurrence === "weekly") {
+      cursor.setDate(cursor.getDate() + 7);
+    } else {
+      cursor = addMonthsPreservingDay(cursor, 1, monthlyDay);
+    }
+  }
+  if (!occurrences.length)
+    throw new Error("Não há dias úteis dentro do período escolhido.");
+  return occurrences;
+}
 const safeJson = (value, fallback = []) =>
   Array.isArray(value) ? value : fallback;
 const formatTimer = (seconds) =>
@@ -437,6 +486,32 @@ function usePlanner(user, isDemo) {
       return mapped;
     });
   }
+  async function insertMany(table, payloads, mapper, key) {
+    if (!payloads.length) return [];
+    if (isDemo) {
+      const timestamp = new Date().toISOString();
+      const rows = payloads.map((payload) =>
+        mapper({
+          id: newId(),
+          ...payload,
+          created_at: timestamp,
+          updated_at: timestamp,
+        }),
+      );
+      localMutation((state) => ({ ...state, [key]: [...state[key], ...rows] }));
+      return rows;
+    }
+    return remote(async () => {
+      const { data: rows, error: issue } = await supabase
+        .from(table)
+        .insert(payloads.map((payload) => ({ ...payload, user_id: user.id })))
+        .select();
+      if (issue) throw issue;
+      const mapped = rows.map(mapper);
+      setData((state) => ({ ...state, [key]: [...state[key], ...mapped] }));
+      return mapped;
+    });
+  }
   async function update(table, id, payload, mapper, key) {
     if (isDemo) {
       const localPayload = Object.fromEntries(
@@ -518,6 +593,19 @@ function usePlanner(user, isDemo) {
           reminder_minutes: Number(form.reminderMinutes),
           notes: form.notes || "",
         },
+        fromEvent,
+        "events",
+      ),
+    addEvents: (forms) =>
+      insertMany(
+        "calendar_events",
+        forms.map((form) => ({
+          title: form.title,
+          starts_at: toIso(form.date, form.time),
+          category: form.category,
+          reminder_minutes: Number(form.reminderMinutes),
+          notes: form.notes || "",
+        })),
         fromEvent,
         "events",
       ),
@@ -3626,6 +3714,8 @@ const defaults = {
     category: "Pessoal",
     reminderMinutes: 15,
     notes: "",
+    recurrence: "none",
+    recurrenceUntil: "",
   },
   task: {
     title: "",
@@ -3718,6 +3808,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
   );
   const isEditing = Boolean(initial?.id);
   const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState("");
   const title = {
     event: isEditing ? "Editar compromisso" : "Novo compromisso",
     task: isEditing ? "Editar tarefa" : "Nova tarefa",
@@ -3745,6 +3836,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
   const set = (patch) => setForm((value) => ({ ...value, ...patch }));
   async function submit(event) {
     event.preventDefault();
+    setFormError("");
     setBusy(true);
     const createOperations = {
       event: planner.addEvent,
@@ -3769,9 +3861,22 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
       meal: planner.updateMeal,
       workout: planner.updateWorkout,
     };
-    const result = isEditing
-      ? await updateOperations[type](initial.id, form)
-      : await createOperations[type](form);
+    let result;
+    try {
+      const forms =
+        type === "event" && !isEditing
+          ? generateEventOccurrences(form)
+          : [form];
+      result = isEditing
+        ? await updateOperations[type](initial.id, form)
+        : type === "event"
+          ? await planner.addEvents(forms)
+          : await createOperations[type](form);
+    } catch (reason) {
+      setBusy(false);
+      setFormError(reason.message || "Não foi possível criar os compromissos.");
+      return;
+    }
     setBusy(false);
     if (result !== null) close();
   }
@@ -3869,6 +3974,54 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
                   </select>
                 </label>
               </div>
+              {!isEditing && (
+                <fieldset className="recurrence-control">
+                  <legend>Repetição</legend>
+                  <div className="form-grid">
+                    <label>
+                      Repetir
+                      <select
+                        value={form.recurrence}
+                        onChange={(e) => set({ recurrence: e.target.value })}
+                      >
+                        <option value="none">Não repetir</option>
+                        <option value="daily">Todos os dias</option>
+                        <option value="weekdays">Nos dias úteis</option>
+                        <option value="weekly">Toda semana</option>
+                        <option value="monthly">Todo mês</option>
+                      </select>
+                    </label>
+                    {form.recurrence !== "none" && (
+                      <label>
+                        Repetir até
+                        <input
+                          type="date"
+                          min={form.date}
+                          required
+                          value={form.recurrenceUntil}
+                          onChange={(e) =>
+                            set({ recurrenceUntil: e.target.value })
+                          }
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {form.recurrence !== "none" && (
+                    <p className="recurrence-note">
+                      {form.recurrenceUntil
+                        ? (() => {
+                            try {
+                              const total = generateEventOccurrences(form).length;
+                              return `Serão criados ${total} compromissos: ${recurrenceCopy[form.recurrence].toLocaleLowerCase("pt-BR")}.`;
+                            } catch (reason) {
+                              return reason.message;
+                            }
+                          })()
+                        : "Defina a data final para visualizar as ocorrências."}
+                    </p>
+                  )}
+                </fieldset>
+              )}
               <label>
                 Detalhes
                 <textarea
@@ -4260,6 +4413,7 @@ function PlannerModal({ type, initial, preset, close, planner, data }) {
               />
             </>
           )}
+          {formError && <p className="form-message">{formError}</p>}
           <button className="button primary wide" disabled={busy}>
             {busy ? "Salvando…" : isEditing ? "Salvar alterações" : "Salvar"}
           </button>
